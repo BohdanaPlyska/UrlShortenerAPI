@@ -37,8 +37,8 @@ export class UrlService {
     return this.urlEncoderService.encodeId(savedUrl._id);
   }
 
-  async getUrl(id: number): Promise<Url> {
-    const cachedUrl = await this.cacheManager.get<Url>(id.toString());
+  async getUrl(id: number): Promise<string> {
+    const cachedUrl = await this.cacheManager.get<string>(id.toString());
 
     if (cachedUrl) {
       this.eventEmitter.emit(ListenerEvents.STATISTIC_EVENT, id);
@@ -57,7 +57,7 @@ export class UrlService {
     );
     this.eventEmitter.emit(ListenerEvents.STATISTIC_EVENT, id);
 
-    return urlEntity;
+    return urlEntity.url;
   }
 
   async getStatisticsForShortUrl(urlId: number): Promise<Statistic[]> {

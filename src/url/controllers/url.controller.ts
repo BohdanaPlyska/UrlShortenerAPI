@@ -63,7 +63,7 @@ export class UrlController {
     status: 404,
     description: 'No URL found for the provided code.',
   })
-  async getOriginalUrl(@Param('code') code: string): Promise<Url> {
+  async getOriginalUrl(@Param('code') code: string): Promise<string> {
     const decodedId = this.urlEncoderService.decodeShortUrl(code);
     return this.urlService.getUrl(decodedId);
   }
