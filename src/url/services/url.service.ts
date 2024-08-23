@@ -6,17 +6,18 @@ import { CACHE_MANAGER, Cache } from '@nestjs/cache-manager';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { StatisticRepository } from '../repository/statistic.repository';
 import { UrlEncoderService } from './url-encoder.service';
+import { ListenerEvents } from '../const';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class UrlService {
-  private readonly STAT_EVENT = 'statisticEvent';
-
   constructor(
     private readonly shortUrlRepository: UrlRepository,
     private readonly statisticRepository: StatisticRepository,
     private readonly urlEncoderService: UrlEncoderService,
     @Inject(CACHE_MANAGER) private readonly cacheManager: Cache,
     @Inject(EventEmitter2) private eventEmitter: EventEmitter2,
+    @Inject(ConfigService) private configService: ConfigService,
   ) {}
 
   async createUrl(url: string): Promise<string> {
@@ -27,7 +28,11 @@ export class UrlService {
 
     const savedUrl = await this.shortUrlRepository.createUrl(url);
 
-    await this.cacheManager.set(savedUrl._id.toString(), url);
+    await this.cacheManager.set(
+      savedUrl._id.toString(),
+      url,
+      this.configService.get('REDIS_TTL'),
+    );
 
     return this.urlEncoderService.encodeId(savedUrl._id);
   }
@@ -36,19 +41,21 @@ export class UrlService {
     const cachedUrl = await this.cacheManager.get<Url>(id.toString());
 
     if (cachedUrl) {
-      this.eventEmitter.emit(this.STAT_EVENT, id);
+      this.eventEmitter.emit(ListenerEvents.STATISTIC_EVENT, id);
       return cachedUrl;
     }
-
-    console.log('Fetching from database...');
 
     const urlEntity = await this.shortUrlRepository.getUrlById(id);
     if (!urlEntity) {
       throw new NotFoundException('Url is not found');
     }
 
-    await this.cacheManager.set(id.toString(), urlEntity.url);
-    this.eventEmitter.emit(this.STAT_EVENT, id);
+    await this.cacheManager.set(
+      id.toString(),
+      urlEntity.url,
+      this.configService.get('REDIS_TTL'),
+    );
+    this.eventEmitter.emit(ListenerEvents.STATISTIC_EVENT, id);
 
     return urlEntity;
   }
