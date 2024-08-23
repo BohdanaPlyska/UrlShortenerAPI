@@ -28,8 +28,8 @@ import { APP_GUARD } from '@nestjs/core';
       inject: [ConfigService],
       useFactory: (config: ConfigService) => [
         {
-          ttl: config.get('THROTTLE_TTL'),
-          limit: config.get('THROTTLE_LIMIT'),
+          ttl: config.get('THROTTLER_TTL'),
+          limit: config.get('THROTTLER_LIMIT'),
         },
       ],
     }),
