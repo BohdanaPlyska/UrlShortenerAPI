@@ -1,6 +1,5 @@
 import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { UrlRepository } from '../repository/url.repository';
-import { Url } from '../entities/url';
 import { Statistic } from '../entities/statistic.entity';
 import { CACHE_MANAGER, Cache } from '@nestjs/cache-manager';
 import { EventEmitter2 } from '@nestjs/event-emitter';
